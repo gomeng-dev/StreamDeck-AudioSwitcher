@@ -46,9 +46,31 @@
       <select class="sdpi-item-value select" id="primaryDevice" onchange="saveSettings();">
       </select>
     </div>
+    <div type="select" class="sdpi-item" id="primarySpatialAudioDiv">
+      <div class="sdpi-item-label">Primary Spatial Audio</div>
+      <select class="sdpi-item-value select" id="primarySpatialAudio" onchange="saveSettings();">
+        <option value="Unchanged" selected>Unchanged</option>
+        <option value="Off">Off</option>
+        <option value="WindowsSonic">Windows Sonic</option>
+        <option value="DolbyAtmosForHeadphones">Dolby Atmos for Headphones</option>
+        <option value="DTSHeadphoneX">DTS Headphone:X</option>
+        <option value="DolbyAtmosForHomeTheater">Dolby Atmos for home theater</option>
+      </select>
+    </div>
     <div type="select" class="sdpi-item" id="secondaryDeviceDiv">
       <div class="sdpi-item-label">Secondary</div>
       <select class="sdpi-item-value select" id="secondaryDevice" onchange="saveSettings();">
+      </select>
+    </div>
+    <div type="select" class="sdpi-item" id="secondarySpatialAudioDiv">
+      <div class="sdpi-item-label">Secondary Spatial Audio</div>
+      <select class="sdpi-item-value select" id="secondarySpatialAudio" onchange="saveSettings();">
+        <option value="Unchanged" selected>Unchanged</option>
+        <option value="Off">Off</option>
+        <option value="WindowsSonic">Windows Sonic</option>
+        <option value="DolbyAtmosForHeadphones">Dolby Atmos for Headphones</option>
+        <option value="DTSHeadphoneX">DTS Headphone:X</option>
+        <option value="DolbyAtmosForHomeTheater">Dolby Atmos for home theater</option>
       </select>
     </div>
     <div type="select" class="sdpi-item">
@@ -102,6 +124,19 @@
         } else {
           child.removeAttribute("selected");
         }
+      }
+
+            // Populate Spatial Audio dropdowns
+      // Default to "Unchanged" if the setting is not yet defined
+      const primarySpatialAudioMode = settings.primarySpatialAudioMode || "Unchanged";
+      document.getElementById('primarySpatialAudio').value = primarySpatialAudioMode;
+
+      if (actionInfo === "com.fredemmott.audiooutputswitch.toggle") {
+        const secondarySpatialAudioMode = settings.secondarySpatialAudioMode || "Unchanged";
+        document.getElementById('secondarySpatialAudio').value = secondarySpatialAudioMode;
+        document.getElementById('secondarySpatialAudioDiv').style.display = ''; // Ensure it's visible for toggle
+      } else { // This is "com.fredemmott.audiooutputswitch.set" action
+        document.getElementById('secondarySpatialAudioDiv').style.display = 'none';
       }
 
       inputDevices = payload['inputDevices'];
@@ -229,6 +264,7 @@
       if (actionInfo == "com.fredemmott.audiooutputswitch.set") {
         document.querySelector('#primaryDeviceDiv .sdpi-item-label').innerText = 'Device';
         document.getElementById('secondaryDeviceDiv').style.display = 'none';
+        document.getElementById('secondarySpatialAudioDiv').style.display = 'none';
       }
 
       // request settings and list of devices
@@ -246,6 +282,11 @@
       settings.secondaryLabel = document.querySelector(`#secondaryDevice option[value="${secondaryId}"]`).label;
       settings.direction = isInput ? 'input' : 'output';
       settings.role = document.getElementById('defaultRole').checked ? 'default' : 'communication';
+      settings.primarySpatialAudioMode = document.getElementById('primarySpatialAudio').value;
+      // Only save secondary spatial audio mode for toggle action
+      if (actionInfo === "com.fredemmott.audiooutputswitch.toggle") {
+        settings.secondarySpatialAudioMode = document.getElementById('secondarySpatialAudio').value;
+      }
       settings.matchStrategy = document.getElementById('matchStrategy').value;
       console.log(settings);
       $SD.api.setSettings(uuid, settings);

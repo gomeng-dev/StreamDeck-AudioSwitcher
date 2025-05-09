@@ -51,6 +51,14 @@ void from_json(const nlohmann::json& j, ButtonSettings& bs) {
   if (j.contains("matchStrategy")) {
     bs.matchStrategy = j.at("matchStrategy");
   }
+  
+  if (j.contains("primarySpatialAudioMode")) {
+    bs.primarySpatialAudioMode = j.at("primarySpatialAudioMode").get<std::string>();
+  }
+
+  if (j.contains("secondarySpatialAudioMode")) {
+    bs.secondarySpatialAudioMode = j.at("secondarySpatialAudioMode").get<std::string>();
+  }
 }
 
 void to_json(nlohmann::json& j, const ButtonSettings& bs) {
@@ -60,6 +68,8 @@ void to_json(nlohmann::json& j, const ButtonSettings& bs) {
     {"primary", bs.primaryDevice},
     {"secondary", bs.secondaryDevice},
     {"matchStrategy", bs.matchStrategy},
+    {"primarySpatialAudioMode", bs.primarySpatialAudioMode},
+    {"secondarySpatialAudioMode", bs.secondarySpatialAudioMode},
   };
 }
 

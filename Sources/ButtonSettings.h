@@ -22,6 +22,8 @@ struct ButtonSettings {
   AudioDeviceInfo primaryDevice;
   AudioDeviceInfo secondaryDevice;
   DeviceMatchStrategy matchStrategy = DeviceMatchStrategy::ID;
+  std::string primarySpatialAudioMode;   // 예: "Unchanged", "Off", "WindowsSonic"
+  std::string secondarySpatialAudioMode; // 예: "
 
   // Changes if there's a fuzzy match
   std::string VolatilePrimaryID() const;

@@ -61,3 +61,12 @@ add_subdirectory(Sources)
 add_subdirectory(sdPlugin)
 
 install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+# svcl.exe (SoundVolumeCommandLine) 배포
+# svcl.exe가 프로젝트 루트의 'svcl' 폴더에 있다고 가정합니다.
+if(WIN32)
+  install(
+    FILES ${CMAKE_SOURCE_DIR}/svcl/svcl.exe
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+  )
+endif()

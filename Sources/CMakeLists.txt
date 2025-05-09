@@ -21,7 +21,11 @@ add_executable(
   sdaudioswitch
   ${SOURCES}
 )
-target_link_libraries(sdaudioswitch AudioDeviceLib StreamDeckSDK)
+if(WIN32)
+  target_link_libraries(sdaudioswitch AudioDeviceLib StreamDeckSDK Ole32.lib MMDevAPI.Lib Propsys.lib Pathcch.lib)
+else()
+  target_link_libraries(sdaudioswitch AudioDeviceLib StreamDeckSDK)
+endif()
 sign_target(sdaudioswitch)
 install(TARGETS sdaudioswitch DESTINATION ${CMAKE_INSTALL_PREFIX})
 

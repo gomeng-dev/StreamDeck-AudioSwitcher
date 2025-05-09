@@ -84,6 +84,7 @@ class AudioSwitcherStreamDeckPlugin : public ESDBasePlugin {
     AudioDeviceDirection direction,
     AudioDeviceRole role,
     const std::string& activeAudioDeviceID);
+  void RequestCurrentSpatialAudioState(const std::string& context, const std::string& deviceID);
   void UpdateState(const std::string& context, const std::string& device = "");
   void FillButtonDeviceInfo(const std::string& context);
 };

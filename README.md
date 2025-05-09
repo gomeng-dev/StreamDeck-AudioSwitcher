@@ -6,6 +6,7 @@ It supports:
 - setting input or output device
 - setting default device or communication device
 - either one-button-per-device, or one button to toggle between two devices
+- (Windows Only) setting spatial sound format (e.g., Off, Windows Sonic, Dolby Atmos) for the selected output device when toggling or setting.
 
 For example, this can be useful to switch between headphones and speakers if they are on different sound cards (e.g. USB speakers or USB headphones).
 
@@ -19,8 +20,10 @@ Download the `com.fredemmott.audiooutputswitch.streamDeckPlugin` file from [the 
 
 # Notes
 
-This uses undocumented and unsupported Windows APIs. These have apparently worked since Windows 7, but they
+This plugin uses undocumented and unsupported Windows APIs for some core audio switching functionalities. These have apparently worked since Windows 7, but they
 might stop working at any time or have unexpected side effects.
+The spatial sound setting feature relies on the external command-line tool `SoundVolumeCommandLine.exe` (svcl.exe) by NirSoft, which is bundled with this plugin for convenience on Windows.
+This plugin is currently **Windows-only** due to its reliance on Windows-specific APIs and tools. macOS is not supported.
 
 
 # FAQ
