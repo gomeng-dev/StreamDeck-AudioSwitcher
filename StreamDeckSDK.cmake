@@ -10,6 +10,7 @@ FetchContent_Declare(
 FetchContent_GetProperties(StreamDeckSDK)
 if(NOT streamdecksdk_POPULATED)
   FetchContent_Populate(StreamDeckSDK)
+  set(BUILD_LIB_ONLY ON)
   add_subdirectory("${streamdecksdk_SOURCE_DIR}" "${streamdecksdk_BINARY_DIR}" EXCLUDE_FROM_ALL)
 endif()
 

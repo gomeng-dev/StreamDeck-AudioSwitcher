@@ -1,0 +1,18 @@
+{
+  "name": "streamdeck-audioswitcher-native",
+  "private": true,
+  "version": "1.0.0",
+  "description": "pnpm wrapper scripts for building the native Stream Deck plugin with CMake.",
+  "packageManager": "pnpm@10.30.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "clean": "cmake -E rm -rf build",
+    "configure": "cmake -S . -B build -A x64 -DGIT_EXECUTABLE=\"C:/Program Files/Git/cmd/git.exe\"",
+    "build": "cmake --build build --config Release --parallel",
+    "rebuild": "pnpm run clean && pnpm run configure && pnpm run build",
+    "test": "ctest --test-dir build -C Release --output-on-failure",
+    "install:streamdeck": "cmake --install build --config Release"
+  }
+}

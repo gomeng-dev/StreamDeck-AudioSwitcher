@@ -85,25 +85,38 @@ std::string FuzzifyInterface(const std::string& name) {
   return captures[2];
 }
 
+bool HasFuzzyMatchMetadata(const AudioDeviceInfo& device) {
+  return !device.interfaceName.empty() && !device.endpointName.empty();
+}
+
 std::string GetVolatileID(
   const AudioDeviceInfo& device,
-  DeviceMatchStrategy strategy) {
+  DeviceMatchStrategy strategy,
+  const ButtonSettings::AudioDeviceListSnapshot& devices) {
   if (device.id.empty()) {
     return {};
+  }
+
+  const auto exact = devices.find(device.id);
+  if (
+    exact != devices.end()
+    && exact->second.state == AudioDeviceState::CONNECTED) {
+    return device.id;
   }
 
   if (strategy == DeviceMatchStrategy::ID) {
     return device.id;
   }
 
-  if (GetAudioDeviceState(device.id) == AudioDeviceState::CONNECTED) {
+  if (!HasFuzzyMatchMetadata(device)) {
+    ESDDebug("Skipping fuzzy match for {}: missing metadata", device.id);
     return device.id;
   }
 
   const auto fuzzyInterface = FuzzifyInterface(device.interfaceName);
   ESDDebug("Looking for a fuzzy match: {} -> {}", device.interfaceName, fuzzyInterface);
 
-  for (const auto& [otherID, other] : GetAudioDeviceList(device.direction)) {
+  for (const auto& [otherID, other] : devices) {
     if (other.state != AudioDeviceState::CONNECTED) {
       continue;
     }
@@ -126,9 +139,19 @@ std::string GetVolatileID(
 }// namespace
 
 std::string ButtonSettings::VolatilePrimaryID() const {
-  return GetVolatileID(primaryDevice, matchStrategy);
+  return VolatilePrimaryID(GetAudioDeviceList(direction));
 }
 
 std::string ButtonSettings::VolatileSecondaryID() const {
-  return GetVolatileID(secondaryDevice, matchStrategy);
+  return VolatileSecondaryID(GetAudioDeviceList(direction));
+}
+
+std::string ButtonSettings::VolatilePrimaryID(
+  const AudioDeviceListSnapshot& devices) const {
+  return GetVolatileID(primaryDevice, matchStrategy, devices);
+}
+
+std::string ButtonSettings::VolatileSecondaryID(
+  const AudioDeviceListSnapshot& devices) const {
+  return GetVolatileID(secondaryDevice, matchStrategy, devices);
 }

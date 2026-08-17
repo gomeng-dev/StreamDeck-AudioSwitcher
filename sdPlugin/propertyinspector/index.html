@@ -142,9 +142,35 @@
       inputDevices = payload['inputDevices'];
       outputDevices = payload['outputDevices'];
 
-      updateDeviceLists(isInput ? inputDevices : outputDevices);
+      const devices = isInput ? inputDevices : outputDevices;
+      const recoveredSettings = recoverMissingDeviceSettings(devices);
+      updateDeviceLists(devices);
       document.getElementById('mainWrapper').classList.remove('hidden');
-      saveSettings();
+      if (recoveredSettings) {
+        saveSettings();
+      }
+    }
+
+    function recoverMissingDeviceSettings(devices) {
+      const normalize = name => (name || '')
+        .replace(/\([0-9]+- /g, '(')
+        .replace(/ \((unplugged|not present|disabled)\)$/, '');
+      let recovered = false;
+
+      ['primary', 'secondary'].forEach(key => {
+        if (settings[key] || !settings[`${key}Label`]) {
+          return;
+        }
+        const label = normalize(settings[`${key}Label`]);
+        const matches = Object.values(devices)
+          .filter(device => normalize(device.displayName) === label);
+        if (matches.length === 1) {
+          settings[key] = matches[0];
+          recovered = true;
+        }
+      });
+
+      return recovered;
     }
 
     function updateDeviceLists(devices) {
@@ -276,9 +302,9 @@
       const devices = isInput ? inputDevices : outputDevices;
       const primaryId = document.getElementById('primaryDevice').value;
       const secondaryId = document.getElementById('secondaryDevice').value;
-      settings.primary = devices[primaryId];
+      settings.primary = devices[primaryId] || settings.primary;
       settings.primaryLabel = document.querySelector(`#primaryDevice option[value="${primaryId}"]`).label;
-      settings.secondary = devices[secondaryId];
+      settings.secondary = devices[secondaryId] || settings.secondary;
       settings.secondaryLabel = document.querySelector(`#secondaryDevice option[value="${secondaryId}"]`).label;
       settings.direction = isInput ? 'input' : 'output';
       settings.role = document.getElementById('defaultRole').checked ? 'default' : 'communication';

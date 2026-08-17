@@ -17,17 +17,22 @@ enum class DeviceMatchStrategy {
 };
 
 struct ButtonSettings {
+  using AudioDeviceListSnapshot
+    = decltype(GetAudioDeviceList(AudioDeviceDirection::INPUT));
+
   AudioDeviceDirection direction = AudioDeviceDirection::INPUT;
   AudioDeviceRole role = AudioDeviceRole::DEFAULT;
   AudioDeviceInfo primaryDevice;
   AudioDeviceInfo secondaryDevice;
   DeviceMatchStrategy matchStrategy = DeviceMatchStrategy::ID;
-  std::string primarySpatialAudioMode;   // 예: "Unchanged", "Off", "WindowsSonic"
-  std::string secondarySpatialAudioMode; // 예: "
+  std::string primarySpatialAudioMode;
+  std::string secondarySpatialAudioMode;
 
   // Changes if there's a fuzzy match
   std::string VolatilePrimaryID() const;
   std::string VolatileSecondaryID() const;
+  std::string VolatilePrimaryID(const AudioDeviceListSnapshot& devices) const;
+  std::string VolatileSecondaryID(const AudioDeviceListSnapshot& devices) const;
 };
 
 void from_json(const nlohmann::json&, ButtonSettings&);

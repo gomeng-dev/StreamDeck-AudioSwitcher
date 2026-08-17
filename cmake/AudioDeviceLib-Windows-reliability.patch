@@ -1,0 +1,114 @@
+diff --git a/src/AudioDevicesWindows.cpp b/src/AudioDevicesWindows.cpp
+index 24f601a..a950e8a 100644
+--- a/src/AudioDevicesWindows.cpp
++++ b/src/AudioDevicesWindows.cpp
+@@ -140,43 +140,59 @@ std::map<std::string, AudioDeviceInfo> GetAudioDeviceList(
+ 
+   winrt::com_ptr<IMMDeviceCollection> devices;
+-  de->EnumAudioEndpoints(
++  if (FAILED(de->EnumAudioEndpoints(
+     AudioDeviceDirectionToEDataFlow(direction),
+     DEVICE_STATEMASK_ALL,
+-    devices.put());
++    devices.put()))) {
++    return {};
++  }
+ 
+-  UINT deviceCount;
+-  devices->GetCount(&deviceCount);
++  UINT deviceCount {};
++  if (FAILED(devices->GetCount(&deviceCount))) {
++    return {};
++  }
+   std::map<std::string, AudioDeviceInfo> out;
+ 
+   for (UINT i = 0; i < deviceCount; ++i) {
+     winrt::com_ptr<IMMDevice> device;
+-    devices->Item(i, device.put());
+-    LPWSTR nativeID;
+-    device->GetId(&nativeID);
++    if (FAILED(devices->Item(i, device.put())) || !device) {
++      continue;
++    }
++    LPWSTR nativeID {};
++    if (FAILED(device->GetId(&nativeID)) || !nativeID) {
++      continue;
++    }
+     const auto id = Utf16ToUtf8(nativeID);
++    CoTaskMemFree(nativeID);
+     winrt::com_ptr<IPropertyStore> properties;
+-    const auto propStoreResult
+-      = device->OpenPropertyStore(STGM_READ, properties.put());
+-    if (!properties) {
++    if (
++      FAILED(device->OpenPropertyStore(STGM_READ, properties.put()))
++      || !properties) {
+       continue;
+     }
+-    PROPVARIANT nativeCombinedName;
+-    properties->GetValue(PKEY_Device_FriendlyName, &nativeCombinedName);
+-    PROPVARIANT nativeInterfaceName;
+-    properties->GetValue(
+-      PKEY_DeviceInterface_FriendlyName, &nativeInterfaceName);
+-    PROPVARIANT nativeEndpointName;
+-    properties->GetValue(PKEY_Device_DeviceDesc, &nativeEndpointName);
+ 
+-    if (!nativeCombinedName.pwszVal) {
++    const auto getStringProperty = [&](const PROPERTYKEY& key) {
++      PROPVARIANT value {};
++      std::string result;
++      if (
++        SUCCEEDED(properties->GetValue(key, &value))
++        && value.vt == VT_LPWSTR
++        && value.pwszVal) {
++        result = Utf16ToUtf8(value.pwszVal);
++      }
++      PropVariantClear(&value);
++      return result;
++    };
++    const auto displayName = getStringProperty(PKEY_Device_FriendlyName);
++    if (displayName.empty()) {
+       continue;
+     }
+ 
+     out[id] = AudioDeviceInfo {
+       .id = id,
+-      .interfaceName = Utf16ToUtf8(nativeInterfaceName.pwszVal),
+-      .endpointName = Utf16ToUtf8(nativeEndpointName.pwszVal),
+-      .displayName = Utf16ToUtf8(nativeCombinedName.pwszVal),
++      .interfaceName
++        = getStringProperty(PKEY_DeviceInterface_FriendlyName),
++      .endpointName = getStringProperty(PKEY_Device_DeviceDesc),
++      .displayName = displayName,
+       .direction = direction,
+       .state = GetAudioDeviceState(device)};
+   }
+@@ -200,12 +216,13 @@ std::string GetDefaultAudioDeviceID(
+   if (!device) {
+     return std::string();
+   }
+-  LPWSTR deviceID;
+-  device->GetId(&deviceID);
+-  if (!deviceID) {
++  LPWSTR deviceID {};
++  if (FAILED(device->GetId(&deviceID)) || !deviceID) {
+     return std::string();
+   }
+-  return Utf16ToUtf8(deviceID);
++  const auto result = Utf16ToUtf8(deviceID);
++  CoTaskMemFree(deviceID);
++  return result;
+ }
+ 
+ void SetDefaultAudioDeviceID(
+@@ -448,6 +465,10 @@ class DefaultChangeCOMCallback
+     EDataFlow flow,
+     ERole winAudioDeviceRole,
+     LPCWSTR defaultDeviceID) override {
++    if (!defaultDeviceID) {
++      return S_OK;
++    }
++
+     AudioDeviceRole role;
+     switch (winAudioDeviceRole) {
+       case ERole::eMultimedia:

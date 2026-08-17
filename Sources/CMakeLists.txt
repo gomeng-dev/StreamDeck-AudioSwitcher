@@ -30,5 +30,9 @@ sign_target(sdaudioswitch)
 install(TARGETS sdaudioswitch DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 if(WIN32)
-  install(FILES "$<TARGET_PDB_FILE:sdaudioswitch>" DESTINATION ${CMAKE_INSTALL_PREFIX})
+  install(
+    FILES "$<TARGET_PDB_FILE:sdaudioswitch>"
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    OPTIONAL
+  )
 endif()

@@ -13,6 +13,7 @@ LICENSE file.
 #include <AudioDevices/AudioDevices.h>
 #include <StreamDeckSDK/ESDBasePlugin.h>
 
+#include <map>
 #include <mutex>
 #include <set>
 
@@ -79,12 +80,18 @@ class AudioSwitcherStreamDeckPlugin : public ESDBasePlugin {
 
   std::map<std::string, Button> mButtons;
   DefaultChangeCallbackHandle mCallbackHandle;
+  AudioDevicePlugEventCallbackHandle mPlugCallbackHandle;
 
   void OnDefaultDeviceChanged(
     AudioDeviceDirection direction,
     AudioDeviceRole role,
     const std::string& activeAudioDeviceID);
-  void RequestCurrentSpatialAudioState(const std::string& context, const std::string& deviceID);
+  void OnAudioDeviceListChanged();
+  void SendAudioDeviceList(
+    const std::string& action,
+    const std::string& context);
   void UpdateState(const std::string& context, const std::string& device = "");
-  void FillButtonDeviceInfo(const std::string& context);
+  void FillButtonDeviceInfo(
+    const std::string& context,
+    const ButtonSettings::AudioDeviceListSnapshot& devices);
 };

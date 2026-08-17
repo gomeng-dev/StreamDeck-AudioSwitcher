@@ -59,6 +59,10 @@ set_default_install_dir_to_streamdeck_plugin_dir()
 
 add_subdirectory(Sources)
 add_subdirectory(sdPlugin)
+include(CTest)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
 install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_PREFIX})
 
